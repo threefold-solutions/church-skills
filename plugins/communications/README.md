@@ -17,6 +17,12 @@ posts, newsletters, and visual assets.
 Cloning the `church-skills` repo and running Codex inside it loads this plugin
 automatically via `.agents/plugins/marketplace.json`.
 
+To install this plugin into another repo:
+
+```bash
+./scripts/install-codex.sh --repo /path/to/your-repo
+```
+
 ## Skills
 
 | Skill | Description |

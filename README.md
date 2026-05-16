@@ -52,7 +52,45 @@ cd church-skills
 codex
 ```
 
-A global install script is on the roadmap.
+Install into another repo:
+
+```bash
+./scripts/install-codex.sh --repo /path/to/your-repo
+```
+
+Install globally for Codex:
+
+```bash
+./scripts/install-codex.sh --user
+```
+
+Remote one-liner:
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/Threefold-Solutions/church-skills/main/scripts/install-all.sh)"
+```
+
+## Development
+
+Validate manifests and skills before opening a PR:
+
+```bash
+./scripts/validate.sh
+```
+
+Build distributable artifacts:
+
+```bash
+./scripts/build-universal.sh
+```
+
+Run the full install smoke suite:
+
+```bash
+./scripts/test-installation.sh
+```
+
+The same checks run in GitHub Actions for pushes and pull requests to `main`.
 
 ## Repo structure
 

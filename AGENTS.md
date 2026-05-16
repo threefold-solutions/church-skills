@@ -32,11 +32,35 @@ available automatically.
 ```bash
 git clone https://github.com/Threefold-Solutions/church-skills
 cd church-skills
-# Future: ./scripts/install-codex.sh --user
+./scripts/install-codex.sh --user
 ```
 
-A cross-platform installer script lives on the roadmap; for now, follow the
-README's manual install steps.
+For a remote install without cloning first:
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/Threefold-Solutions/church-skills/main/scripts/install-all.sh)"
+```
+
+## Development checks
+
+Run the validator after editing marketplaces, plugin manifests, commands, or
+skills:
+
+```bash
+./scripts/validate.sh
+```
+
+The validator checks JSON manifests, marketplace source paths, aligned plugin
+versions, skill frontmatter, plugin-skill `allowed-tools`, and shell code
+fences inside skills or commands. GitHub Actions runs the same check for pushes
+and pull requests to `main`.
+
+Run the fuller installer smoke suite after changing distribution or install
+plumbing:
+
+```bash
+./scripts/test-installation.sh
+```
 
 ## Repo layout
 

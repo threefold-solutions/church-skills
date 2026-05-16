@@ -85,12 +85,66 @@ frontmatter sets `name`, `description` (WHEN to activate), and
 3. Register the plugin in `.claude-plugin/marketplace.json` and
    `.agents/plugins/marketplace.json`.
 4. Bump the marketplace `version` (semver) so existing users see the update.
+5. Run `./scripts/test-installation.sh` before opening a PR.
+
+## Development checks
+
+Run the repo validator after editing marketplaces, plugin manifests, commands,
+or skills:
+
+```bash
+./scripts/validate.sh
+```
+
+The validator checks:
+
+- JSON syntax and required marketplace/plugin manifest fields.
+- Marketplace source paths and plugin `plugin.json` files exist.
+- Claude marketplace versions, Claude plugin versions, and Codex plugin
+  versions stay aligned.
+- Skill frontmatter has `name` and `description`; plugin skills also require
+  `allowed-tools`.
+- Shell code fences in skills/commands parse with `bash -n`.
+
+GitHub Actions runs the same check on pushes and pull requests to `main`.
+
+Run the fuller installer smoke suite after changing distribution or install
+plumbing:
+
+```bash
+./scripts/test-installation.sh
+```
+
+That suite runs the validator, builds `dist/`, verifies Codex marketplace
+paths, tests repo install/merge behavior, refuses to overwrite unrelated
+same-name plugins, and confirms legacy flat-skill cleanup only removes owned
+church-skills content.
+
+## Distribution scripts
+
+- `./scripts/build-universal.sh` builds ignored artifacts under `dist/`:
+  Codex plugins, Claude Code plugins, Claude.ai skill folders, and `.skill`
+  bundles.
+- `./scripts/install-codex.sh --repo /path/to/repo` copies Codex plugins into
+  another repo and merges `.agents/plugins/marketplace.json`.
+- `./scripts/install-codex.sh --user` registers and enables the marketplace
+  globally for Codex.
+- `./scripts/install-all.sh` bootstraps from GitHub and installs or refreshes
+  detected local tools.
+- `./scripts/refresh-plugins.sh` refreshes Claude Code's marketplace cache when
+  the marketplace is already installed.
 
 ## Conventions
 
 - License: MIT (see `LICENSE`).
 - Versioning: marketplace and every plugin track the same `version` for now.
-  Split per-plugin versions later if release cadence diverges.
+  Update `.claude-plugin/marketplace.json`,
+  `plugins/<plugin>/.claude-plugin/plugin.json`, and
+  `plugins/<plugin>/.codex-plugin/plugin.json` together. Split per-plugin
+  versions later if release cadence diverges.
 - Plugin names are short and unprefixed (e.g. `communications`, not
   `church-communications`) — the marketplace `church-skills@` namespace
   already scopes them.
+- Long plugin skills should stay focused. If a skill grows past roughly 300
+  lines of mostly static reference material, split it into narrower skills or
+  mark the static block with `<!-- cache:start -->` / `<!-- cache:end -->`.
