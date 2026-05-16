@@ -1,7 +1,7 @@
 ---
 name: screenshot-to-vcard
 description: Convert any screenshot containing contact information into a downloadable vCard (.vcf) file. Trigger whenever the user shares a screenshot — from Planning Center, a CRM, a website, a LinkedIn profile, an email signature, a business card photo, or any other source — and wants to turn it into a contact, vCard, or shareable address-book card. Trigger on phrases like "turn this into a contact", "make a vCard", "convert this screenshot", "grab their contact info", "I want to share this person's info", "generate a contact card", or any time a screenshot is shared and contact info is mentioned. Works with any app or source — not just Planning Center.
-allowed-tools: AskUserQuestion, Write, Bash
+allowed-tools: AskUserQuestion, Read, Write, Bash
 ---
 
 # Screenshot to vCard
