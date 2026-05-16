@@ -19,7 +19,13 @@ automatically via `.agents/plugins/marketplace.json`.
 
 ## Skills
 
-_Skills land here as they ship._
+| Skill | Description |
+|-------|-------------|
+| `screenshot-to-vcard` | Convert a screenshot of contact info into a downloadable `.vcf` vCard |
+
+A Claude.ai web version of `screenshot-to-vcard` also ships at
+[`claude-ai-skills/screenshot-to-vcard/`](../../claude-ai-skills/screenshot-to-vcard/)
+for staff using Claude in a browser.
 
 ## Commands
 

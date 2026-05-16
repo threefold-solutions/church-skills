@@ -4,11 +4,16 @@ Project instructions for OpenAI Codex CLI.
 
 ## Project Overview
 
-`church-skills` is a plugin marketplace of AI skills for churches and
-ministries, distributed as both Claude Code plugins and Codex plugins. Each
-plugin focuses on one ministry domain.
+`church-skills` is a repository of AI skills built for churches and
+ministries. It ships in two formats:
 
-## Plugins
+1. **Claude.ai web Skills** — `.skill` bundles under `claude-ai-skills/`.
+2. **Claude Code + Codex plugins** — a plugin marketplace under `plugins/`.
+
+Codex consumes the second tree via `.agents/plugins/marketplace.json`. The
+first tree is not relevant to Codex.
+
+## Plugins (Codex-visible)
 
 | Plugin | Description |
 |--------|-------------|

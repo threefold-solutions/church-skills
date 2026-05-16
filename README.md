@@ -1,23 +1,37 @@
 # church-skills
 
-Claude Code and Codex plugins built for churches and ministries — by [Threefold Solutions](https://github.com/Threefold-Solutions).
+AI skills and plugins built for churches and ministries — by [Threefold Solutions](https://github.com/Threefold-Solutions).
 
-> **Status:** early. The first plugin (`communications`) is being scaffolded. Expect breaking changes until `v1.0.0`.
+> **Status:** early. First skill (`screenshot-to-vcard`) ships in both formats; more on the way. Expect breaking changes until `v1.0.0`.
 
 ## Overview
 
-`church-skills` is a plugin marketplace. Each plugin focuses on one ministry
-domain and ships the slash commands and skills that domain needs. Install one,
-some, or all — depending on what your church team actually does.
+`church-skills` ships in two formats so it works for everyone on your team:
 
-| Plugin | Description | Status |
-|--------|-------------|--------|
-| `communications` | Drafting and design helpers for church comms (announcements, social posts, newsletters, visual assets) | Scaffolding |
+- **Claude.ai web Skills** — for staff using Claude in a browser (claude.ai). Distributed as `.skill` bundles.
+- **Claude Code + Codex plugins** — for developers and power users running Claude Code or OpenAI Codex CLI. Distributed as a plugin marketplace.
 
-More plugins (sermon prep, volunteer care, service planning, discipleship,
-pastoral care) on the roadmap.
+Both formats live in the same repo so a skill ported between them stays in sync.
+
+## What's inside
+
+| Skill / Plugin | Claude.ai Skill | Claude Code Plugin | Description |
+|---|---|---|---|
+| `screenshot-to-vcard` | ✅ | ✅ (under `communications`) | Convert a screenshot of contact info into a downloadable `.vcf` vCard |
+
+More on the roadmap: sermon prep, volunteer care, service planning, discipleship, pastoral care.
 
 ## Install
+
+### Claude.ai (web)
+
+1. Clone or download this repo.
+2. Zip the skill folder you want — for example:
+   ```bash
+   cd claude-ai-skills
+   zip -r screenshot-to-vcard.skill screenshot-to-vcard
+   ```
+3. Upload the resulting `.skill` file to claude.ai via **Settings → Capabilities → Skills**.
 
 ### Claude Code
 
@@ -26,11 +40,11 @@ pastoral care) on the roadmap.
 /plugin install communications@church-skills
 ```
 
-To browse: `/plugin marketplace browse church-skills`.
+To browse the full marketplace: `/plugin marketplace browse church-skills`.
 
 ### OpenAI Codex CLI
 
-Repo-local (plugins load whenever you run Codex inside this repo):
+Repo-local (plugins load automatically whenever Codex runs inside this repo):
 
 ```bash
 git clone https://github.com/Threefold-Solutions/church-skills
@@ -38,23 +52,36 @@ cd church-skills
 codex
 ```
 
-Global install script is on the roadmap.
+A global install script is on the roadmap.
 
 ## Repo structure
 
 ```
-.claude-plugin/marketplace.json   # Claude Code marketplace manifest
-.agents/plugins/marketplace.json  # Codex / cross-platform registry
-plugins/<name>/                   # One directory per plugin
+claude-ai-skills/                   # Claude.ai web Skills (.skill bundles, unzipped)
+  <skill-name>/
+    SKILL.md
+
+.claude-plugin/marketplace.json     # Claude Code marketplace manifest
+.agents/plugins/marketplace.json    # Codex / cross-platform plugin registry
+plugins/                            # Claude Code + Codex plugins
+  <plugin-name>/
+    .claude-plugin/plugin.json
+    .codex-plugin/plugin.json
+    commands/
+    skills/
+      <skill-name>/SKILL.md
 ```
 
-See [`CLAUDE.md`](./CLAUDE.md) or [`AGENTS.md`](./AGENTS.md) for the full
-layout and conventions.
+A skill may live in one or both trees:
+
+- **`claude-ai-skills/<name>/SKILL.md`** uses Claude.ai web tooling (`ask_user_input_v0`, `present_files`, `/mnt/user-data/outputs/`).
+- **`plugins/<plugin>/skills/<name>/SKILL.md`** uses Claude Code tooling (`AskUserQuestion`, `Write`, normal filesystem paths).
+
+See [`CLAUDE.md`](./CLAUDE.md) or [`AGENTS.md`](./AGENTS.md) for the full conventions.
 
 ## Contributing
 
-Issues and PRs welcome — especially from church staff sharing real workflows
-that would benefit from a skill.
+Issues and PRs welcome — especially from church staff sharing real workflows that would benefit from a skill.
 
 ## License
 
