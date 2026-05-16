@@ -1,0 +1,27 @@
+{
+  "name": "communications",
+  "version": "0.1.0",
+  "description": "Drafting and design helpers for church communications: announcements, social posts, newsletters, and visual assets.",
+  "author": {
+    "name": "Threefold Solutions",
+    "url": "https://github.com/Threefold-Solutions"
+  },
+  "homepage": "https://github.com/Threefold-Solutions/church-skills",
+  "repository": "https://github.com/Threefold-Solutions/church-skills",
+  "license": "MIT",
+  "keywords": [
+    "communications",
+    "church",
+    "ministry",
+    "social-media",
+    "newsletter",
+    "announcements"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Church Communications",
+    "shortDescription": "Drafting and design helpers for church communications.",
+    "developerName": "Threefold Solutions",
+    "category": "Communications"
+  }
+}

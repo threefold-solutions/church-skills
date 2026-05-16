@@ -1,0 +1,20 @@
+{
+  "name": "church-skills",
+  "interface": {
+    "displayName": "Church Skills"
+  },
+  "plugins": [
+    {
+      "name": "communications",
+      "source": {
+        "source": "local",
+        "path": "./plugins/communications"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Communications"
+    }
+  ]
+}
