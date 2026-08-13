@@ -57,6 +57,7 @@ frontmatter sets `name`, `description` (WHEN to activate), and
 
 | Plugin | Description |
 |--------|-------------|
+| `advisory` | Simulated advisory panels that pressure-test church-facing decisions from multiple staff perspectives |
 | `communications` | Drafting and design helpers for church comms (announcements, social posts, newsletters, visual assets) |
 
 ## Skills
@@ -64,6 +65,11 @@ frontmatter sets `name`, `description` (WHEN to activate), and
 | Skill | Claude.ai | Claude Code | Lives under |
 |-------|-----------|-------------|-------------|
 | `screenshot-to-vcard` | ✅ | ✅ | `communications` plugin |
+| `staff-review` | ✅ | ✅ | `advisory` plugin |
+
+`staff-review` is the one skill whose two copies carry different names. The Claude.ai
+bundle is `church-staff-review`, because a standalone `.skill` has no plugin namespace
+to supply the church context; under the plugin, `advisory/` already does.
 
 ## Adding a new skill
 

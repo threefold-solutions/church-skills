@@ -18,6 +18,7 @@ Both formats live in the same repo so a skill ported between them stays in sync.
 | Skill / Plugin | Claude.ai Skill | Claude Code Plugin | Description |
 |---|---|---|---|
 | `screenshot-to-vcard` | ✅ | ✅ (under `communications`) | Convert a screenshot of contact info into a downloadable `.vcf` vCard |
+| `staff-review` | ✅ (as `church-staff-review`) | ✅ (under `advisory`) | Six church staff personas react, debate, and deliver a unified recommendation on anything that touches church operations |
 
 More on the roadmap: sermon prep, volunteer care, service planning, discipleship, pastoral care.
 
@@ -38,6 +39,7 @@ More on the roadmap: sermon prep, volunteer care, service planning, discipleship
 ```text
 /plugin marketplace add Threefold-Solutions/church-skills
 /plugin install communications@church-skills
+/plugin install advisory@church-skills
 ```
 
 To browse the full marketplace: `/plugin marketplace browse church-skills`.

@@ -108,16 +108,31 @@ cat > "$TMP_REPO/.agents/plugins/marketplace.json" <<'JSON'
 }
 JSON
 if "$ROOT_DIR/scripts/install-codex.sh" --repo "$TMP_REPO" >/tmp/church-skills-merge-install.log 2>&1; then
-    if python3 - "$TMP_REPO" <<'PY'
+    if python3 - "$TMP_REPO" "$ROOT_DIR" <<'PY'
 import json
 import sys
 from pathlib import Path
 
 root = Path(sys.argv[1])
+source_root = Path(sys.argv[2])
 plugins = json.loads((root / ".agents" / "plugins" / "marketplace.json").read_text())["plugins"]
 names = {plugin["name"] for plugin in plugins}
-if names != {"existing", "communications"}:
-    raise SystemExit(f"unexpected marketplace names: {sorted(names)}")
+
+# The pre-existing unrelated entry must survive the merge untouched.
+if "existing" not in names:
+    raise SystemExit(f"unrelated entry 'existing' was dropped: {sorted(names)}")
+
+# Every church-skills plugin must be merged in, and nothing else invented.
+expected = {
+    plugin["name"]
+    for plugin in json.loads(
+        (source_root / ".agents" / "plugins" / "marketplace.json").read_text()
+    )["plugins"]
+}
+if not expected <= names:
+    raise SystemExit(f"church-skills plugins missing after merge: {sorted(expected - names)}")
+if names - expected - {"existing"}:
+    raise SystemExit(f"unexpected marketplace names: {sorted(names - expected - {'existing'})}")
 PY
     then
         pass "Codex repo install preserves unrelated marketplace entries"

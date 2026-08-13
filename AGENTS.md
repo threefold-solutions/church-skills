@@ -17,6 +17,7 @@ first tree is not relevant to Codex.
 
 | Plugin | Description |
 |--------|-------------|
+| `advisory` | Simulated advisory panels that pressure-test church-facing decisions from multiple staff perspectives |
 | `communications` | Drafting and design helpers for church comms (announcements, social posts, newsletters, visual assets) |
 
 ## Installation

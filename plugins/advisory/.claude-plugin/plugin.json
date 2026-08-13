@@ -1,6 +1,6 @@
 {
-  "name": "communications",
-  "description": "Drafting and design helpers for church communications: announcements, social posts, newsletters, and visual assets.",
+  "name": "advisory",
+  "description": "Simulated advisory panels that pressure-test church-facing decisions from multiple staff perspectives before you commit.",
   "version": "0.2.0",
   "author": {
     "name": "Threefold Solutions",
@@ -10,11 +10,12 @@
   "repository": "https://github.com/Threefold-Solutions/church-skills",
   "license": "MIT",
   "keywords": [
-    "communications",
+    "advisory",
     "church",
     "ministry",
-    "social-media",
-    "newsletter",
-    "announcements"
+    "feedback",
+    "review",
+    "personas",
+    "product"
   ]
 }
