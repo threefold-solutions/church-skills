@@ -50,7 +50,12 @@ capability — never name a tool from one specific surface, and always state wha
 when the capability is unavailable.
 
 The `allowed-tools:` frontmatter field is exempt (Codex ignores it), as is the
-`claude-ai-skills/` tree. `./scripts/validate.sh` enforces the rule; see
+`claude-ai-skills/` tree.
+
+`./scripts/validate.sh` enforces the **tool-name** half and fails the build on a
+violation. It only *warns* about a missing fallback, because whether one is present and
+correct is a judgment about prose rather than something a regex can decide — so a green
+validator is not evidence that a skill degrades gracefully. See
 [`CLAUDE.md`](./CLAUDE.md) for examples.
 
 ## Development checks

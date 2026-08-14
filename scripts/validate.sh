@@ -160,6 +160,42 @@ SURFACE_BOUND_IN_CODE = rf"`({GENERIC_TOOL_NAMES})`"
 SURFACE_BOUND_AS_TOOL = rf"\b({GENERIC_TOOL_NAMES})`?\s+tools?\b"
 
 
+# Whether a skill states a fallback is a judgment about prose, not something a regex can
+# decide — a check satisfied by typing the word "fallback" would only manufacture false
+# confidence. So this is a WARNING, and the docs claim enforcement only for tool names.
+CAPABILITY_REFERENCE = r"(?i)\bnative\b[^.\n]{0,60}\bcapabilit(?:y|ies)\b"
+FALLBACK_LANGUAGE = r"(?i)\b(?:cannot|can't|unable|lacks?|does not|doesn't|without|fallback|instead|degrade)\b"
+
+
+def warn_missing_fallback(path):
+    """Flag a capability reference whose section never says what to do without it."""
+    lines = path.read_text().splitlines()
+
+    # Group lines into markdown sections; a fallback usually sits a few lines below the
+    # capability reference but inside the same section.
+    sections = []
+    current = []
+    for idx, line in enumerate(lines, start=1):
+        if line.startswith("#") and current:
+            sections.append(current)
+            current = []
+        current.append((idx, line))
+    if current:
+        sections.append(current)
+
+    for section in sections:
+        hit = next(
+            (idx for idx, line in section if re.search(CAPABILITY_REFERENCE, line)), None
+        )
+        if hit is None:
+            continue
+        if not any(re.search(FALLBACK_LANGUAGE, line) for _, line in section):
+            warnings.append(
+                f"{rel(path)}:{hit}: names a native capability but the section never says what to "
+                "do when it is unavailable; confirm the skill degrades instead of stalling"
+            )
+
+
 def validate_surface_agnostic(path):
     text = path.read_text()
     lines = text.splitlines()
@@ -228,6 +264,7 @@ def validate_skills_and_commands():
     for path in sorted((root / "plugins").glob("*/skills/*/SKILL.md")):
         validate_skill_file(path, require_allowed_tools=True)
         validate_surface_agnostic(path)
+        warn_missing_fallback(path)
         validate_shell_fences(path)
 
     for path in sorted((root / "claude-ai-skills").glob("*/SKILL.md")):

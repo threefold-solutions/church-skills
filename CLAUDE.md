@@ -168,8 +168,17 @@ Two deliberate exemptions:
   (`ask_user_input_v0`, `present_files`, `/mnt/user-data/outputs/`), so the rule does
   not apply to it.
 
-`./scripts/validate.sh` enforces this for `plugins/*/skills/*/SKILL.md` and
-`plugins/*/commands/*.md`.
+**What the validator does and does not enforce.** `./scripts/validate.sh` mechanically
+enforces the *first* half of the rule — no surface-specific tool names — across
+`plugins/*/skills/*/SKILL.md` and `plugins/*/commands/*.md`, and fails the build on a
+violation.
+
+It cannot enforce the second half. Whether a fallback is present, correct, and
+reachable is a judgment about prose; a check satisfied by typing the word "fallback"
+would only manufacture false confidence. The validator therefore emits a **warning**
+when a section names a native capability and never says what to do without it — a
+prompt to look, not a gate. **A green validator is not evidence that a skill degrades
+gracefully.** That stays a review-time judgment.
 
 ## Conventions
 
