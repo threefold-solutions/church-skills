@@ -209,8 +209,19 @@ def validate_surface_agnostic(path):
                 break
 
     for offset, line in enumerate(lines[body_start:], start=body_start + 1):
-        for pattern in (SURFACE_BOUND_ALWAYS, SURFACE_BOUND_IN_CODE, SURFACE_BOUND_AS_TOOL):
-            match = re.search(pattern, line)
+        # Markdown styling must not be an escape hatch: `Read`, **Read**, _Read_ and
+        # [Read](url) all name the same tool. Match the inline-code form against the raw
+        # line (its backticks are the signal), and everything else against a copy with
+        # link syntax and emphasis markers stripped.
+        plain = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", line)
+        plain = re.sub(r"[*_`]+", "", plain)
+
+        for pattern, subject in (
+            (SURFACE_BOUND_ALWAYS, plain),
+            (SURFACE_BOUND_IN_CODE, line),
+            (SURFACE_BOUND_AS_TOOL, plain),
+        ):
+            match = re.search(pattern, subject)
             if match:
                 errors.append(
                     f"{rel(path)}:{offset}: names surface-specific tool {match.group(1)!r}; "
