@@ -151,11 +151,25 @@ def validate_skill_file(path, require_allowed_tools):
 
 # Names with no plain-English meaning are flagged wherever they appear. The rule is
 # symmetric — binding a shared skill to Codex is exactly as broken as binding it to
-# Claude Code — so Codex-side identifiers belong here too.
+# Claude Code — so every surface's identifiers belong here.
+#
+# This is a denylist, and a denylist of tool names is inherently incomplete: surfaces add
+# tools, and no list here can know tomorrow's. It catches what authors actually reach for,
+# which is worth having, but it is a net rather than a proof. Add names as they appear —
+# and do not let a green run stand in for a human noticing that a body names a tool.
+SURFACE_BOUND_NAMES = {
+    "Claude Code": ["AskUserQuestion", "NotebookEdit", "TodoWrite", "WebFetch", "WebSearch"],
+    "Claude.ai web": ["ask_user_input_v0", "present_files"],
+    "Codex": [
+        "apply_patch",
+        "exec_command",
+        "view_image",
+        "update_plan",
+        "request_user_input",
+    ],
+}
 SURFACE_BOUND_ALWAYS = (
-    r"\b(AskUserQuestion|NotebookEdit|TodoWrite|WebFetch|WebSearch"      # Claude Code
-    r"|ask_user_input_v0|present_files"                                  # Claude.ai web
-    r"|apply_patch|exec_command|view_image|update_plan)\b"               # Codex
+    r"\b(" + "|".join(n for names in SURFACE_BOUND_NAMES.values() for n in names) + r")\b"
 )
 
 # Names that are also ordinary words ("read the file", "write it out") are only flagged

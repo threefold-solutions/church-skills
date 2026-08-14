@@ -174,10 +174,16 @@ Two deliberate exemptions:
   (`ask_user_input_v0`, `present_files`, `/mnt/user-data/outputs/`), so the rule does
   not apply to it.
 
-**What the validator does and does not enforce.** `./scripts/validate.sh` mechanically
-enforces the *first* half of the rule — no surface-specific tool names — across
+**What the validator does and does not enforce.** `./scripts/validate.sh` checks the
+*first* half of the rule — no surface-specific tool names — across
 `plugins/*/skills/*/SKILL.md` and `plugins/*/commands/*.md`, and fails the build on a
 violation.
+
+It checks that half against a **denylist of known tool names**, which is inherently
+incomplete: surfaces add tools, and the list cannot know tomorrow's. It catches the
+names authors actually reach for, in any markdown styling, but a clean run means "none
+of the known names appeared" — not "this skill names no tools." Add names to
+`SURFACE_BOUND_NAMES` in the validator as they come up.
 
 It cannot enforce the second half. Whether a fallback is present, correct, and
 reachable is a judgment about prose; a check satisfied by typing the word "fallback"

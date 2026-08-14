@@ -52,7 +52,8 @@ when the capability is unavailable.
 The `allowed-tools:` frontmatter field is exempt (Codex ignores it), as is the
 `claude-ai-skills/` tree.
 
-`./scripts/validate.sh` enforces the **tool-name** half and fails the build on a
+`./scripts/validate.sh` checks the **tool-name** half against a denylist of known tool
+names — inherently incomplete, since surfaces add tools — and fails the build on a
 violation. It only *warns* about a missing fallback, because whether one is present and
 correct is a judgment about prose rather than something a regex can decide — so a green
 validator is not evidence that a skill degrades gracefully. See

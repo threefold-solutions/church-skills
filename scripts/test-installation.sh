@@ -261,6 +261,7 @@ check_case 'Use `apply_patch` to update the review.' FLAG
 check_case 'Run exec_command to inspect the tree.' FLAG
 check_case 'Call **view_image** on the mockup.' FLAG
 check_case 'Use update_plan to track the rounds.' FLAG
+check_case 'Use request_user_input to ask what to review.' FLAG
 # Claude.ai web names. These are snake_case, so they regress the moment underscore
 # handling treats an identifier as emphasis.
 check_case 'Call present_files with the vCard.' FLAG
