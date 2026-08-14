@@ -35,7 +35,9 @@ Visually scan the screenshot the user shared and extract every contact field tha
 
 ## Step 2: Confirm Which Fields to Include
 
-Show a clean summary of what you found, then use `AskUserQuestion` with `multiSelect: true` to let the user pick exactly which fields to include in the vCard. List each found field as its own option.
+Show a clean summary of what you found, then let the user pick exactly which fields to include in the vCard, listing each found field as its own option.
+
+Use the surface's native multi-select structured-input capability if it has one. If it does not, ask the question in plain text and wait for the answer before continuing — never assume the selection.
 
 Example summary before asking:
 
@@ -87,7 +89,7 @@ END:VCARD
 
 ### Save the File
 
-Save to the user's Downloads folder using the `Write` tool:
+Save to the user's Downloads folder using the surface's native file-writing capability:
 
 ```
 ~/Downloads/[firstname_lastname].vcf

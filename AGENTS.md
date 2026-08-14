@@ -42,6 +42,17 @@ For a remote install without cloning first:
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Threefold-Solutions/church-skills/main/scripts/install-all.sh)"
 ```
 
+## Surface-agnostic skill bodies
+
+Plugin skills are shared by Claude Code and Codex from the same `SKILL.md`. A skill
+body must describe the required outcome and let the active surface bind it to a native
+capability — never name a tool from one specific surface, and always state what to do
+when the capability is unavailable.
+
+The `allowed-tools:` frontmatter field is exempt (Codex ignores it), as is the
+`claude-ai-skills/` tree. `./scripts/validate.sh` enforces the rule; see
+[`CLAUDE.md`](./CLAUDE.md) for examples.
+
 ## Development checks
 
 Run the validator after editing marketplaces, plugin manifests, commands, or

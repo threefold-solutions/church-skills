@@ -142,6 +142,45 @@ def validate_skill_file(path, require_allowed_tools):
         warnings.append(f"{rel(path)}: {line_count} lines; consider splitting or marking static reference content for caching")
 
 
+# Plugin skills are shared by multiple agent surfaces (Claude Code, Codex CLI).
+# A skill body must describe the required outcome and let the active surface bind it
+# to a native capability — never name a tool from one specific surface. The frontmatter
+# `allowed-tools` field is exempt: it is a declaration to the surface, not an
+# instruction to the model. Skills under claude-ai-skills/ are exempt entirely, since
+# that tree is deliberately bound to Claude.ai web tooling.
+
+SURFACE_BOUND_ALWAYS = r"\b(AskUserQuestion|NotebookEdit|TodoWrite|WebFetch|WebSearch|ask_user_input_v0|present_files)\b"
+SURFACE_BOUND_IN_CODE = r"`(Read|Write|Edit|Bash|Glob|Grep|Task|WebFetch|WebSearch|AskUserQuestion|NotebookEdit|TodoWrite)`"
+
+
+def validate_surface_agnostic(path):
+    text = path.read_text()
+    lines = text.splitlines()
+
+    # Drop frontmatter so `allowed-tools` does not trip the scan.
+    body_start = 0
+    if lines and lines[0].strip() == "---":
+        for idx, line in enumerate(lines[1:], start=2):
+            if line.strip() == "---":
+                body_start = idx
+                break
+
+    for offset, line in enumerate(lines[body_start:], start=body_start + 1):
+        for pattern in (SURFACE_BOUND_ALWAYS, SURFACE_BOUND_IN_CODE):
+            match = re.search(pattern, line)
+            if match:
+                errors.append(
+                    f"{rel(path)}:{offset}: names surface-specific tool {match.group(1)!r}; "
+                    "describe the outcome and let the active surface bind a native capability"
+                )
+                break
+        if "/mnt/user-data" in line:
+            errors.append(
+                f"{rel(path)}:{offset}: references the Claude.ai web path /mnt/user-data; "
+                "plugin skills must not assume one surface's filesystem"
+            )
+
+
 def validate_command_file(path):
     fields = frontmatter(path)
     if fields is None:
@@ -181,6 +220,7 @@ def validate_shell_fences(path):
 def validate_skills_and_commands():
     for path in sorted((root / "plugins").glob("*/skills/*/SKILL.md")):
         validate_skill_file(path, require_allowed_tools=True)
+        validate_surface_agnostic(path)
         validate_shell_fences(path)
 
     for path in sorted((root / "claude-ai-skills").glob("*/SKILL.md")):
@@ -189,6 +229,7 @@ def validate_skills_and_commands():
 
     for path in sorted((root / "plugins").glob("*/commands/*.md")):
         validate_command_file(path)
+        validate_surface_agnostic(path)
         validate_shell_fences(path)
 
     for path in sorted((root / "scripts").glob("*.sh")):

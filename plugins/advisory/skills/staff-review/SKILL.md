@@ -140,14 +140,16 @@ Anything that affects church staff:
 
 The topic, question, screenshot, mockup, copy, or idea to review.
 
-Resolve the artifact before Round 1:
+Resolve the artifact before Round 1, using whatever native file-reading capability the
+current surface provides:
 
-- **A path to a file or image** — open it with `Read` and have the panel respond to what
-  they actually see, not to the filename.
+- **A path to a file or image** — open it and have the panel respond to what they
+  actually see, not to the filename.
 - **A path to a directory or a broad reference** (e.g. "review the onboarding flow") —
-  read the relevant files first, then run the panel on what you found.
+  open the relevant files first, then run the panel on what you found.
 - **A pasted image, mockup, or copy block** — treat it as the artifact under review.
 - **A bare question** (e.g. "Is $47/month too much?") — run the full panel on the
-  question directly. No file to read.
+  question directly. Nothing to open.
 
-Never run the panel on a guess about an artifact you could have read.
+Never run the panel on a guess about an artifact you could have opened. If this surface
+cannot open the artifact, say so and ask the user to paste the content instead.

@@ -140,6 +140,37 @@ church-skills content.
 - `./scripts/refresh-plugins.sh` refreshes Claude Code's marketplace cache when
   the marketplace is already installed.
 
+## Surface-agnostic skill bodies
+
+Plugin skills under `plugins/` are shared by multiple agent surfaces — Claude Code
+today, Codex CLI from the same `SKILL.md`, others later. A skill body must therefore
+**describe the required outcome and let the active surface bind it to a native
+capability. Never name a tool from one specific surface.**
+
+```markdown
+<!-- wrong — Codex has no tool called Read -->
+Open the mockup with `Read` and describe what you see.
+
+<!-- right -->
+Open the mockup using the surface's native file-reading capability.
+If this surface cannot open it, say so and ask the user to paste the content.
+```
+
+Always state the fallback. A skill that assumes a capability exists will stall on a
+surface that lacks it; a skill that says what to do instead degrades gracefully.
+
+Two deliberate exemptions:
+
+- **`allowed-tools:` in frontmatter** — a declaration *to* the surface, not an
+  instruction to the model. Claude Code reads it, Codex ignores it. Keep naming Claude
+  tools there.
+- **`claude-ai-skills/`** — that tree is deliberately bound to Claude.ai web tooling
+  (`ask_user_input_v0`, `present_files`, `/mnt/user-data/outputs/`), so the rule does
+  not apply to it.
+
+`./scripts/validate.sh` enforces this for `plugins/*/skills/*/SKILL.md` and
+`plugins/*/commands/*.md`.
+
 ## Conventions
 
 - License: MIT (see `LICENSE`).
