@@ -161,6 +161,41 @@ if "$ROOT_DIR/scripts/install-codex.sh" --repo "$TMP_REPO" >/tmp/church-skills-r
     fail "Codex repo install overwrote unrelated plugin"
 else
     pass "Codex repo install refuses unrelated same-name plugin"
+
+    # A refusal must be atomic. Asserting only the non-zero exit misses the case where
+    # plugins listed BEFORE the conflicting one were already copied in — leaving the
+    # target mutated, with an ownership marker, and unregistered because the
+    # marketplace write never runs.
+    if python3 - "$TMP_REPO" "$ROOT_DIR" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+target = Path(sys.argv[1])
+source_root = Path(sys.argv[2])
+
+incoming = {
+    plugin["name"]
+    for plugin in json.loads(
+        (source_root / ".agents" / "plugins" / "marketplace.json").read_text()
+    )["plugins"]
+}
+# The pre-seeded conflicting plugin is the only thing that may exist in the target.
+strays = sorted(
+    p.name
+    for p in (target / "plugins").iterdir()
+    if p.is_dir() and p.name in incoming and p.name != "communications"
+)
+if strays:
+    raise SystemExit(f"refused install still copied plugins into the target: {strays}")
+if (target / ".agents" / "plugins" / "marketplace.json").exists():
+    raise SystemExit("refused install wrote a marketplace file")
+PY
+    then
+        pass "Codex repo install leaves no partial state after refusing"
+    else
+        fail "Codex repo install mutated the target despite refusing"
+    fi
 fi
 rm -rf "$TMP_REPO"
 

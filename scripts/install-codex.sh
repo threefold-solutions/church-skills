@@ -220,8 +220,12 @@ marketplace = load_json(source_marketplace)
 if not marketplace:
     raise SystemExit(f"missing source marketplace: {source_marketplace}")
 
-incoming_plugins = []
-installed = []
+# Phase 1 — resolve every incoming plugin and verify replacement safety BEFORE any
+# filesystem mutation. A conflict on the Nth plugin must not leave the first N-1
+# already copied into the target: an install that reports refusal must change nothing.
+# (With a single plugin this held by accident; it stops holding the moment a second
+# plugin is listed ahead of the conflicting one.)
+planned = []
 for entry in marketplace.get("plugins", []):
     name = entry.get("name")
     path_value = (entry.get("source") or {}).get("path")
@@ -235,6 +239,12 @@ for entry in marketplace.get("plugins", []):
         raise SystemExit(
             f"refusing to replace existing plugin directory not owned by church-skills: {target_plugin}"
         )
+    planned.append((entry, name, source_plugin, target_plugin))
+
+# Phase 2 — every plugin cleared the safety check, so copying is safe.
+incoming_plugins = []
+installed = []
+for entry, name, source_plugin, target_plugin in planned:
     if target_plugin.exists():
         shutil.rmtree(target_plugin)
     shutil.copytree(source_plugin, target_plugin)
