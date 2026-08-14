@@ -97,14 +97,18 @@ Save to the user's Downloads folder using the surface's native file-writing capa
 
 Use lowercase with underscores. If the name has more than two parts, use first and last only in the filename. If the user is on a system without `~/Downloads/`, fall back to the current working directory.
 
+**If this surface cannot write files at all**, do not stall. Return the complete vCard inline in a code block and tell the user to save it as `[firstname_lastname].vcf`. The card is exactly as usable — only the delivery changes.
+
 ---
 
 ## Step 4: Tell the User Where It Is and How to Use It
 
-After writing the file, tell the user:
+When the file was written, tell the user:
 
 1. The absolute path of the saved `.vcf` file.
 2. One short line on sharing options — text/email the file, AirDrop if nearby, or open it to import into their own contacts.
+
+When the vCard came back inline instead, skip the path and give the same one line on sharing, noting they need to save the block as a `.vcf` file first.
 
 Keep it brief — no long explanations.
 
