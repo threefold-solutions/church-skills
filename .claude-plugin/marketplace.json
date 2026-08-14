@@ -6,14 +6,29 @@
   },
   "metadata": {
     "description": "Claude Code skills for churches and ministries",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "plugins": [
+    {
+      "name": "advisory",
+      "source": "./plugins/advisory",
+      "description": "Simulated advisory panels that pressure-test church-facing decisions from multiple staff perspectives before you commit.",
+      "version": "0.2.0",
+      "keywords": [
+        "advisory",
+        "church",
+        "ministry",
+        "feedback",
+        "review",
+        "personas",
+        "product"
+      ]
+    },
     {
       "name": "communications",
       "source": "./plugins/communications",
       "description": "Drafting and design helpers for church communications: announcements, social posts, newsletters, and visual assets.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "keywords": [
         "communications",
         "church",

@@ -142,6 +142,123 @@ def validate_skill_file(path, require_allowed_tools):
         warnings.append(f"{rel(path)}: {line_count} lines; consider splitting or marking static reference content for caching")
 
 
+# Plugin skills are shared by multiple agent surfaces (Claude Code, Codex CLI).
+# A skill body must describe the required outcome and let the active surface bind it
+# to a native capability — never name a tool from one specific surface. The frontmatter
+# `allowed-tools` field is exempt: it is a declaration to the surface, not an
+# instruction to the model. Skills under claude-ai-skills/ are exempt entirely, since
+# that tree is deliberately bound to Claude.ai web tooling.
+
+# Names with no plain-English meaning are flagged wherever they appear. The rule is
+# symmetric — binding a shared skill to Codex is exactly as broken as binding it to
+# Claude Code — so every surface's identifiers belong here.
+#
+# This is a denylist, and a denylist of tool names is inherently incomplete: surfaces add
+# tools, and no list here can know tomorrow's. It catches what authors actually reach for,
+# which is worth having, but it is a net rather than a proof. Add names as they appear —
+# and do not let a green run stand in for a human noticing that a body names a tool.
+SURFACE_BOUND_NAMES = {
+    "Claude Code": ["AskUserQuestion", "NotebookEdit", "TodoWrite", "WebFetch", "WebSearch"],
+    "Claude.ai web": ["ask_user_input_v0", "present_files"],
+    "Codex": [
+        "apply_patch",
+        "exec_command",
+        "view_image",
+        "update_plan",
+        "request_user_input",
+    ],
+}
+SURFACE_BOUND_ALWAYS = (
+    r"\b(" + "|".join(n for names in SURFACE_BOUND_NAMES.values() for n in names) + r")\b"
+)
+
+# Names that are also ordinary words ("read the file", "write it out") are only flagged
+# where the text is clearly naming a tool, not using the verb. Two such forms:
+# inline code (`Read`) and an explicit "Read tool" / "Write tools" phrasing.
+GENERIC_TOOL_NAMES = r"Read|Write|Edit|Bash|Glob|Grep|Task|WebFetch|WebSearch|AskUserQuestion|NotebookEdit|TodoWrite"
+SURFACE_BOUND_IN_CODE = rf"`({GENERIC_TOOL_NAMES})`"
+SURFACE_BOUND_AS_TOOL = rf"\b({GENERIC_TOOL_NAMES})`?\s+tools?\b"
+
+
+# Whether a skill states a fallback is a judgment about prose, not something a regex can
+# decide — a check satisfied by typing the word "fallback" would only manufacture false
+# confidence. So this is a WARNING, and the docs claim enforcement only for tool names.
+CAPABILITY_REFERENCE = r"(?i)\bnative\b[^.\n]{0,60}\bcapabilit(?:y|ies)\b"
+FALLBACK_LANGUAGE = r"(?i)\b(?:cannot|can't|unable|lacks?|does not|doesn't|without|fallback|instead|degrade)\b"
+
+
+def warn_missing_fallback(path):
+    """Flag a capability reference whose section never says what to do without it."""
+    lines = path.read_text().splitlines()
+
+    # Group lines into markdown sections; a fallback usually sits a few lines below the
+    # capability reference but inside the same section.
+    sections = []
+    current = []
+    for idx, line in enumerate(lines, start=1):
+        if line.startswith("#") and current:
+            sections.append(current)
+            current = []
+        current.append((idx, line))
+    if current:
+        sections.append(current)
+
+    for section in sections:
+        hit = next(
+            (idx for idx, line in section if re.search(CAPABILITY_REFERENCE, line)), None
+        )
+        if hit is None:
+            continue
+        if not any(re.search(FALLBACK_LANGUAGE, line) for _, line in section):
+            warnings.append(
+                f"{rel(path)}:{hit}: names a native capability but the section never says what to "
+                "do when it is unavailable; confirm the skill degrades instead of stalling"
+            )
+
+
+def validate_surface_agnostic(path):
+    text = path.read_text()
+    lines = text.splitlines()
+
+    # Drop frontmatter so `allowed-tools` does not trip the scan.
+    body_start = 0
+    if lines and lines[0].strip() == "---":
+        for idx, line in enumerate(lines[1:], start=2):
+            if line.strip() == "---":
+                body_start = idx
+                break
+
+    for offset, line in enumerate(lines[body_start:], start=body_start + 1):
+        # Markdown styling must not be an escape hatch: `Read`, **Read**, _Read_ and
+        # [Read](url) all name the same tool. Match the inline-code form against the raw
+        # line (its backticks are the signal), and everything else against a copy with
+        # link syntax and emphasis markers stripped.
+        plain = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", line)
+        plain = re.sub(r"[*`]+", "", plain)
+        # Strip underscores only where they delimit emphasis (_Read_), never inside an
+        # identifier — collapsing apply_patch to applypatch would hide the very names
+        # below, snake_case being how both Codex and Claude.ai web tools are spelled.
+        plain = re.sub(r"(?<![A-Za-z0-9])_+|_+(?![A-Za-z0-9])", "", plain)
+
+        for pattern, subject in (
+            (SURFACE_BOUND_ALWAYS, plain),
+            (SURFACE_BOUND_IN_CODE, line),
+            (SURFACE_BOUND_AS_TOOL, plain),
+        ):
+            match = re.search(pattern, subject)
+            if match:
+                errors.append(
+                    f"{rel(path)}:{offset}: names surface-specific tool {match.group(1)!r}; "
+                    "describe the outcome and let the active surface bind a native capability"
+                )
+                break
+        if "/mnt/user-data" in line:
+            errors.append(
+                f"{rel(path)}:{offset}: references the Claude.ai web path /mnt/user-data; "
+                "plugin skills must not assume one surface's filesystem"
+            )
+
+
 def validate_command_file(path):
     fields = frontmatter(path)
     if fields is None:
@@ -181,6 +298,8 @@ def validate_shell_fences(path):
 def validate_skills_and_commands():
     for path in sorted((root / "plugins").glob("*/skills/*/SKILL.md")):
         validate_skill_file(path, require_allowed_tools=True)
+        validate_surface_agnostic(path)
+        warn_missing_fallback(path)
         validate_shell_fences(path)
 
     for path in sorted((root / "claude-ai-skills").glob("*/SKILL.md")):
@@ -189,6 +308,7 @@ def validate_skills_and_commands():
 
     for path in sorted((root / "plugins").glob("*/commands/*.md")):
         validate_command_file(path)
+        validate_surface_agnostic(path)
         validate_shell_fences(path)
 
     for path in sorted((root / "scripts").glob("*.sh")):

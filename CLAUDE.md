@@ -13,9 +13,12 @@ It ships in two formats so the same content can serve both audiences:
    power users.
 
 A skill may live in one or both trees. When it lives in both, the Claude.ai
-copy uses web-skill tooling (`ask_user_input_v0`, `present_files`,
-`/mnt/user-data/outputs/`) and the Claude Code copy uses Code tooling
-(`AskUserQuestion`, `Write`, normal filesystem paths).
+copy names web-skill tooling directly (`ask_user_input_v0`, `present_files`,
+`/mnt/user-data/outputs/`), because that tree targets exactly one surface. The
+plugin copy must not name tools at all — it describes the capability it needs
+and declares tools only in `allowed-tools:` frontmatter, because Claude Code
+and Codex share that one file. See [Surface-agnostic skill
+bodies](#surface-agnostic-skill-bodies).
 
 ## Architecture
 
@@ -57,6 +60,7 @@ frontmatter sets `name`, `description` (WHEN to activate), and
 
 | Plugin | Description |
 |--------|-------------|
+| `advisory` | Simulated advisory panels that pressure-test church-facing decisions from multiple staff perspectives |
 | `communications` | Drafting and design helpers for church comms (announcements, social posts, newsletters, visual assets) |
 
 ## Skills
@@ -64,6 +68,11 @@ frontmatter sets `name`, `description` (WHEN to activate), and
 | Skill | Claude.ai | Claude Code | Lives under |
 |-------|-----------|-------------|-------------|
 | `screenshot-to-vcard` | ✅ | ✅ | `communications` plugin |
+| `staff-review` | ✅ | ✅ | `advisory` plugin |
+
+`staff-review` is the one skill whose two copies carry different names. The Claude.ai
+bundle is `church-staff-review`, because a standalone `.skill` has no plugin namespace
+to supply the church context; under the plugin, `advisory/` already does.
 
 ## Adding a new skill
 
@@ -73,9 +82,12 @@ frontmatter sets `name`, `description` (WHEN to activate), and
 - **Claude Code skill**: place it under the relevant plugin at
   `plugins/<plugin>/skills/<skill-name>/SKILL.md` and add `allowed-tools:` to
   its frontmatter.
-- **Both**: keep both copies in sync. The Claude.ai copy uses
-  `ask_user_input_v0` / `present_files` / `/mnt/user-data/outputs/`; the
-  Claude Code copy uses `AskUserQuestion` / `Write` / normal paths.
+- **Both**: keep both copies in sync. The Claude.ai copy names
+  `ask_user_input_v0` / `present_files` / `/mnt/user-data/outputs/` directly.
+  The plugin copy names no tools in its body — it describes the capability
+  ("the surface's native file-writing capability") plus a fallback, and lists
+  tools only in `allowed-tools:`. `./scripts/validate.sh` rejects a plugin
+  skill body that names one.
 
 ## Adding a new plugin
 
@@ -133,6 +145,52 @@ church-skills content.
   detected local tools.
 - `./scripts/refresh-plugins.sh` refreshes Claude Code's marketplace cache when
   the marketplace is already installed.
+
+## Surface-agnostic skill bodies
+
+Plugin skills under `plugins/` are shared by multiple agent surfaces — Claude Code
+today, Codex CLI from the same `SKILL.md`, others later. A skill body must therefore
+**describe the required outcome and let the active surface bind it to a native
+capability. Never name a tool from one specific surface.**
+
+```markdown
+<!-- wrong — Codex has no tool called Read -->
+Open the mockup with `Read` and describe what you see.
+
+<!-- right -->
+Open the mockup using the surface's native file-reading capability.
+If this surface cannot open it, say so and ask the user to paste the content.
+```
+
+Always state the fallback. A skill that assumes a capability exists will stall on a
+surface that lacks it; a skill that says what to do instead degrades gracefully.
+
+Two deliberate exemptions:
+
+- **`allowed-tools:` in frontmatter** — a declaration *to* the surface, not an
+  instruction to the model. Claude Code reads it, Codex ignores it. Keep naming Claude
+  tools there.
+- **`claude-ai-skills/`** — that tree is deliberately bound to Claude.ai web tooling
+  (`ask_user_input_v0`, `present_files`, `/mnt/user-data/outputs/`), so the rule does
+  not apply to it.
+
+**What the validator does and does not enforce.** `./scripts/validate.sh` checks the
+*first* half of the rule — no surface-specific tool names — across
+`plugins/*/skills/*/SKILL.md` and `plugins/*/commands/*.md`, and fails the build on a
+violation.
+
+It checks that half against a **denylist of known tool names**, which is inherently
+incomplete: surfaces add tools, and the list cannot know tomorrow's. It catches the
+names authors actually reach for, in any markdown styling, but a clean run means "none
+of the known names appeared" — not "this skill names no tools." Add names to
+`SURFACE_BOUND_NAMES` in the validator as they come up.
+
+It cannot enforce the second half. Whether a fallback is present, correct, and
+reachable is a judgment about prose; a check satisfied by typing the word "fallback"
+would only manufacture false confidence. The validator therefore emits a **warning**
+when a section names a native capability and never says what to do without it — a
+prompt to look, not a gate. **A green validator is not evidence that a skill degrades
+gracefully.** That stays a review-time judgment.
 
 ## Conventions
 

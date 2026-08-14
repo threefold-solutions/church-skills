@@ -18,6 +18,7 @@ Both formats live in the same repo so a skill ported between them stays in sync.
 | Skill / Plugin | Claude.ai Skill | Claude Code Plugin | Description |
 |---|---|---|---|
 | `screenshot-to-vcard` | ✅ | ✅ (under `communications`) | Convert a screenshot of contact info into a downloadable `.vcf` vCard |
+| `staff-review` | ✅ (as `church-staff-review`) | ✅ (under `advisory`) | Six church staff personas react, debate, and deliver a unified recommendation on anything that touches church operations |
 
 More on the roadmap: sermon prep, volunteer care, service planning, discipleship, pastoral care.
 
@@ -38,6 +39,7 @@ More on the roadmap: sermon prep, volunteer care, service planning, discipleship
 ```text
 /plugin marketplace add Threefold-Solutions/church-skills
 /plugin install communications@church-skills
+/plugin install advisory@church-skills
 ```
 
 To browse the full marketplace: `/plugin marketplace browse church-skills`.
@@ -112,8 +114,8 @@ plugins/                            # Claude Code + Codex plugins
 
 A skill may live in one or both trees:
 
-- **`claude-ai-skills/<name>/SKILL.md`** uses Claude.ai web tooling (`ask_user_input_v0`, `present_files`, `/mnt/user-data/outputs/`).
-- **`plugins/<plugin>/skills/<name>/SKILL.md`** uses Claude Code tooling (`AskUserQuestion`, `Write`, normal filesystem paths).
+- **`claude-ai-skills/<name>/SKILL.md`** targets one surface, so it names Claude.ai web tooling directly (`ask_user_input_v0`, `present_files`, `/mnt/user-data/outputs/`).
+- **`plugins/<plugin>/skills/<name>/SKILL.md`** is shared by Claude Code and Codex, so its body names no tools at all — it describes the capability it needs plus a fallback, and declares tools only in `allowed-tools:` frontmatter.
 
 See [`CLAUDE.md`](./CLAUDE.md) or [`AGENTS.md`](./AGENTS.md) for the full conventions.
 

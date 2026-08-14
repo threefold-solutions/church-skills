@@ -35,7 +35,9 @@ Visually scan the screenshot the user shared and extract every contact field tha
 
 ## Step 2: Confirm Which Fields to Include
 
-Show a clean summary of what you found, then use `AskUserQuestion` with `multiSelect: true` to let the user pick exactly which fields to include in the vCard. List each found field as its own option.
+Show a clean summary of what you found, then let the user pick exactly which fields to include in the vCard, listing each found field as its own option.
+
+Use the surface's native multi-select structured-input capability if it has one. If it does not, ask the question in plain text and wait for the answer before continuing — never assume the selection.
 
 Example summary before asking:
 
@@ -87,7 +89,7 @@ END:VCARD
 
 ### Save the File
 
-Save to the user's Downloads folder using the `Write` tool:
+Save to the user's Downloads folder using the surface's native file-writing capability:
 
 ```
 ~/Downloads/[firstname_lastname].vcf
@@ -95,14 +97,18 @@ Save to the user's Downloads folder using the `Write` tool:
 
 Use lowercase with underscores. If the name has more than two parts, use first and last only in the filename. If the user is on a system without `~/Downloads/`, fall back to the current working directory.
 
+**If this surface cannot write files at all**, do not stall. Return the complete vCard inline in a code block and tell the user to save it as `[firstname_lastname].vcf`. The card is exactly as usable — only the delivery changes.
+
 ---
 
 ## Step 4: Tell the User Where It Is and How to Use It
 
-After writing the file, tell the user:
+When the file was written, tell the user:
 
 1. The absolute path of the saved `.vcf` file.
 2. One short line on sharing options — text/email the file, AirDrop if nearby, or open it to import into their own contacts.
+
+When the vCard came back inline instead, skip the path and give the same one line on sharing, noting they need to save the block as a `.vcf` file first.
 
 Keep it brief — no long explanations.
 

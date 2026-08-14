@@ -17,6 +17,7 @@ first tree is not relevant to Codex.
 
 | Plugin | Description |
 |--------|-------------|
+| `advisory` | Simulated advisory panels that pressure-test church-facing decisions from multiple staff perspectives |
 | `communications` | Drafting and design helpers for church comms (announcements, social posts, newsletters, visual assets) |
 
 ## Installation
@@ -40,6 +41,23 @@ For a remote install without cloning first:
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Threefold-Solutions/church-skills/main/scripts/install-all.sh)"
 ```
+
+## Surface-agnostic skill bodies
+
+Plugin skills are shared by Claude Code and Codex from the same `SKILL.md`. A skill
+body must describe the required outcome and let the active surface bind it to a native
+capability — never name a tool from one specific surface, and always state what to do
+when the capability is unavailable.
+
+The `allowed-tools:` frontmatter field is exempt (Codex ignores it), as is the
+`claude-ai-skills/` tree.
+
+`./scripts/validate.sh` checks the **tool-name** half against a denylist of known tool
+names — inherently incomplete, since surfaces add tools — and fails the build on a
+violation. It only *warns* about a missing fallback, because whether one is present and
+correct is a judgment about prose rather than something a regex can decide — so a green
+validator is not evidence that a skill degrades gracefully. See
+[`CLAUDE.md`](./CLAUDE.md) for examples.
 
 ## Development checks
 
