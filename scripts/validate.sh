@@ -149,8 +149,15 @@ def validate_skill_file(path, require_allowed_tools):
 # instruction to the model. Skills under claude-ai-skills/ are exempt entirely, since
 # that tree is deliberately bound to Claude.ai web tooling.
 
+# Names with no plain-English meaning are flagged wherever they appear.
 SURFACE_BOUND_ALWAYS = r"\b(AskUserQuestion|NotebookEdit|TodoWrite|WebFetch|WebSearch|ask_user_input_v0|present_files)\b"
-SURFACE_BOUND_IN_CODE = r"`(Read|Write|Edit|Bash|Glob|Grep|Task|WebFetch|WebSearch|AskUserQuestion|NotebookEdit|TodoWrite)`"
+
+# Names that are also ordinary words ("read the file", "write it out") are only flagged
+# where the text is clearly naming a tool, not using the verb. Two such forms:
+# inline code (`Read`) and an explicit "Read tool" / "Write tools" phrasing.
+GENERIC_TOOL_NAMES = r"Read|Write|Edit|Bash|Glob|Grep|Task|WebFetch|WebSearch|AskUserQuestion|NotebookEdit|TodoWrite"
+SURFACE_BOUND_IN_CODE = rf"`({GENERIC_TOOL_NAMES})`"
+SURFACE_BOUND_AS_TOOL = rf"\b({GENERIC_TOOL_NAMES})`?\s+tools?\b"
 
 
 def validate_surface_agnostic(path):
@@ -166,7 +173,7 @@ def validate_surface_agnostic(path):
                 break
 
     for offset, line in enumerate(lines[body_start:], start=body_start + 1):
-        for pattern in (SURFACE_BOUND_ALWAYS, SURFACE_BOUND_IN_CODE):
+        for pattern in (SURFACE_BOUND_ALWAYS, SURFACE_BOUND_IN_CODE, SURFACE_BOUND_AS_TOOL):
             match = re.search(pattern, line)
             if match:
                 errors.append(
