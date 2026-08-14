@@ -114,8 +114,8 @@ plugins/                            # Claude Code + Codex plugins
 
 A skill may live in one or both trees:
 
-- **`claude-ai-skills/<name>/SKILL.md`** uses Claude.ai web tooling (`ask_user_input_v0`, `present_files`, `/mnt/user-data/outputs/`).
-- **`plugins/<plugin>/skills/<name>/SKILL.md`** uses Claude Code tooling (`AskUserQuestion`, `Write`, normal filesystem paths).
+- **`claude-ai-skills/<name>/SKILL.md`** targets one surface, so it names Claude.ai web tooling directly (`ask_user_input_v0`, `present_files`, `/mnt/user-data/outputs/`).
+- **`plugins/<plugin>/skills/<name>/SKILL.md`** is shared by Claude Code and Codex, so its body names no tools at all — it describes the capability it needs plus a fallback, and declares tools only in `allowed-tools:` frontmatter.
 
 See [`CLAUDE.md`](./CLAUDE.md) or [`AGENTS.md`](./AGENTS.md) for the full conventions.
 

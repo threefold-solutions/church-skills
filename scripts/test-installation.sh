@@ -225,6 +225,60 @@ else
 fi
 rm -rf "$TMP_HOME"
 
+# The surface-agnostic scan has to recognise a tool name in every spelling a skill
+# author might reach for, and stay quiet on ordinary prose. Both halves matter: a
+# formatting variant that slips through defeats the check, and a false positive on
+# "read the file" makes it unusable. Runs against a throwaway copy of the repo, so the
+# real tree is never touched.
+SELFTEST_ROOT="$(mktemp -d)"
+tar -cf - --exclude=./.git --exclude=./dist --exclude=./node_modules . \
+    | (cd "$SELFTEST_ROOT" && tar -xf -)
+PROBE="$SELFTEST_ROOT/plugins/advisory/skills/staff-review/SKILL.md"
+cp "$PROBE" "$SELFTEST_ROOT/probe.bak"
+selftest_failures=0
+
+check_case() {
+    local line="$1" expected="$2" actual
+    cp "$SELFTEST_ROOT/probe.bak" "$PROBE"
+    printf '\n%s\n' "$line" >> "$PROBE"
+    if "$SELFTEST_ROOT/scripts/validate.sh" >/dev/null 2>&1; then actual="PASS"; else actual="FLAG"; fi
+    if [[ "$actual" != "$expected" ]]; then
+        echo "  expected $expected, got $actual: $line"
+        selftest_failures=$((selftest_failures + 1))
+    fi
+}
+
+# Claude Code names, in every formatting a skill author might use.
+check_case 'Use the Read tool to open the artifact.' FLAG
+check_case 'Use the `Read` tool to open the artifact.' FLAG
+check_case 'Use the **Read** tool to open the artifact.' FLAG
+check_case 'Use the _Read_ tool to open the artifact.' FLAG
+check_case 'Use the [Read](https://docs.claude.com) tool.' FLAG
+check_case 'Save it with the **Write** tool.' FLAG
+check_case 'Ask via AskUserQuestion.' FLAG
+# Codex names — binding a shared skill to Codex is exactly as broken.
+check_case 'Use `apply_patch` to update the review.' FLAG
+check_case 'Run exec_command to inspect the tree.' FLAG
+check_case 'Call **view_image** on the mockup.' FLAG
+check_case 'Use update_plan to track the rounds.' FLAG
+# Claude.ai web names. These are snake_case, so they regress the moment underscore
+# handling treats an identifier as emphasis.
+check_case 'Call present_files with the vCard.' FLAG
+check_case 'Ask with ask_user_input_v0 first.' FLAG
+# Ordinary prose must stay clean, or the check is unusable.
+check_case 'Read the file carefully before judging.' PASS
+check_case 'Write a concise summary of the debate.' PASS
+check_case '*Edit* nothing; the panel only reviews.' PASS
+check_case 'Apply the patch the panel recommends.' PASS
+check_case 'Open the mockup and read what it says.' PASS
+
+if [[ "$selftest_failures" -eq 0 ]]; then
+    pass "surface-agnostic scan catches every tool-name spelling without false positives"
+else
+    fail "surface-agnostic scan mismatched on $selftest_failures case(s)"
+fi
+rm -rf "$SELFTEST_ROOT"
+
 if [[ "$ERRORS" -gt 0 ]]; then
     echo ""
     echo "$ERRORS installation test(s) failed"

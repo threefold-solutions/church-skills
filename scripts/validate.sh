@@ -149,8 +149,14 @@ def validate_skill_file(path, require_allowed_tools):
 # instruction to the model. Skills under claude-ai-skills/ are exempt entirely, since
 # that tree is deliberately bound to Claude.ai web tooling.
 
-# Names with no plain-English meaning are flagged wherever they appear.
-SURFACE_BOUND_ALWAYS = r"\b(AskUserQuestion|NotebookEdit|TodoWrite|WebFetch|WebSearch|ask_user_input_v0|present_files)\b"
+# Names with no plain-English meaning are flagged wherever they appear. The rule is
+# symmetric — binding a shared skill to Codex is exactly as broken as binding it to
+# Claude Code — so Codex-side identifiers belong here too.
+SURFACE_BOUND_ALWAYS = (
+    r"\b(AskUserQuestion|NotebookEdit|TodoWrite|WebFetch|WebSearch"      # Claude Code
+    r"|ask_user_input_v0|present_files"                                  # Claude.ai web
+    r"|apply_patch|exec_command|view_image|update_plan)\b"               # Codex
+)
 
 # Names that are also ordinary words ("read the file", "write it out") are only flagged
 # where the text is clearly naming a tool, not using the verb. Two such forms:
@@ -214,7 +220,11 @@ def validate_surface_agnostic(path):
         # line (its backticks are the signal), and everything else against a copy with
         # link syntax and emphasis markers stripped.
         plain = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", line)
-        plain = re.sub(r"[*_`]+", "", plain)
+        plain = re.sub(r"[*`]+", "", plain)
+        # Strip underscores only where they delimit emphasis (_Read_), never inside an
+        # identifier — collapsing apply_patch to applypatch would hide the very names
+        # below, snake_case being how both Codex and Claude.ai web tools are spelled.
+        plain = re.sub(r"(?<![A-Za-z0-9])_+|_+(?![A-Za-z0-9])", "", plain)
 
         for pattern, subject in (
             (SURFACE_BOUND_ALWAYS, plain),

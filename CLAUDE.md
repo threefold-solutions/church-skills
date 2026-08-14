@@ -13,9 +13,12 @@ It ships in two formats so the same content can serve both audiences:
    power users.
 
 A skill may live in one or both trees. When it lives in both, the Claude.ai
-copy uses web-skill tooling (`ask_user_input_v0`, `present_files`,
-`/mnt/user-data/outputs/`) and the Claude Code copy uses Code tooling
-(`AskUserQuestion`, `Write`, normal filesystem paths).
+copy names web-skill tooling directly (`ask_user_input_v0`, `present_files`,
+`/mnt/user-data/outputs/`), because that tree targets exactly one surface. The
+plugin copy must not name tools at all — it describes the capability it needs
+and declares tools only in `allowed-tools:` frontmatter, because Claude Code
+and Codex share that one file. See [Surface-agnostic skill
+bodies](#surface-agnostic-skill-bodies).
 
 ## Architecture
 
@@ -79,9 +82,12 @@ to supply the church context; under the plugin, `advisory/` already does.
 - **Claude Code skill**: place it under the relevant plugin at
   `plugins/<plugin>/skills/<skill-name>/SKILL.md` and add `allowed-tools:` to
   its frontmatter.
-- **Both**: keep both copies in sync. The Claude.ai copy uses
-  `ask_user_input_v0` / `present_files` / `/mnt/user-data/outputs/`; the
-  Claude Code copy uses `AskUserQuestion` / `Write` / normal paths.
+- **Both**: keep both copies in sync. The Claude.ai copy names
+  `ask_user_input_v0` / `present_files` / `/mnt/user-data/outputs/` directly.
+  The plugin copy names no tools in its body — it describes the capability
+  ("the surface's native file-writing capability") plus a fallback, and lists
+  tools only in `allowed-tools:`. `./scripts/validate.sh` rejects a plugin
+  skill body that names one.
 
 ## Adding a new plugin
 
